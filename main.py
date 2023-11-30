@@ -1,2 +1,2 @@
-import spaCy
+import spacy
 import math
