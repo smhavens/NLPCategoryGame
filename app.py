@@ -13,7 +13,7 @@ import evaluate
 
 tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 
-answer = "Pizza"
+# answer = "Pizza"
 
 
 #Mean Pooling - Take attention mask into account for correct averaging
@@ -114,10 +114,11 @@ def main():
     word1 = "Black"
     word2 = "White"
     word3 = "Sun"
+    global answer 
     answer = "Moon"
     guesses = []
     
-    prompt = "{word1} is to {word2} as {word3} is to ____"
+    prompt = f"{word1} is to {word2} as {word3} is to ____"
     with gr.Blocks() as iface:
         gr.Markdown(prompt)
         with gr.Tab("Guess"):
