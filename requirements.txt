@@ -1,1 +1,4 @@
 spacy
+sentence_transformers
+transformers
+torch
