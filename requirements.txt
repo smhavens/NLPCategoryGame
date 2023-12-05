@@ -2,3 +2,4 @@ spacy
 sentence_transformers
 transformers
 torch
+evaluate
