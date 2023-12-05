@@ -17,3 +17,6 @@ Check out the configuration reference at https://huggingface.co/docs/hub/spaces-
 
 ### Pre-trained model
 [sentence-transformers/all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
+
+
+TESTING README UPDATE
