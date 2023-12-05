@@ -13,6 +13,8 @@ import evaluate
 
 tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 
+answer = "Pizza"
+
 
 #Mean Pooling - Take attention mask into account for correct averaging
 def mean_pooling(model_output, attention_mask):
@@ -102,7 +104,7 @@ def finetune(train, eval):
 def greet(name):
     return "Hello " + name + "!!"
 
-def check_answer(guess:str, answer:str):
+def check_answer(guess:str):
     if guess.lower() == answer.lower():
         return "Correct!"
     else:
@@ -125,7 +127,7 @@ def main():
         with gr.Accordion("Open for previous guesses"):
             for guess in guesses:
                 gr.Markdown(guess)
-        text_button.click(check_answer, inputs=[text_input,answer], outputs=text_output)
+        text_button.click(check_answer, inputs=[text_input], outputs=text_output)
     # iface = gr.Interface(fn=greet, inputs="text", outputs="text")
     iface.launch()
 
