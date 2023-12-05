@@ -54,9 +54,10 @@ def greet(name):
 
 
 def main():
-    iface = gr.Interface(fn=greet, inputs="text", outputs="text")
-    iface.launch()
+    return 0
 
-
+iface = gr.Interface(fn=greet, inputs="text", outputs="text")
+iface.launch()
+    
 if __name__ == "__main__":
     main()
