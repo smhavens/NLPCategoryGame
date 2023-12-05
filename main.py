@@ -1,3 +1,4 @@
+import gradio as gr
 import spacy
 import math
 from datasets import load_dataset
@@ -7,7 +8,6 @@ import torch
 import torch.nn.functional as F
 
 
-
 #Mean Pooling - Take attention mask into account for correct averaging
 def mean_pooling(model_output, attention_mask):
     token_embeddings = model_output[0] #First element of model_output contains all token embeddings
@@ -15,7 +15,7 @@ def mean_pooling(model_output, attention_mask):
     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
 
-def main():
+def training():
     dataset = load_dataset("glue", "cola")
     dataset = dataset["train"]
 
@@ -48,5 +48,15 @@ def main():
     print("Sentence embeddings:")
     print(sentence_embeddings)
     
+
+def greet(name):
+    return "Hello " + name + "!!"
+
+
+def main():
+    iface = gr.Interface(fn=greet, inputs="text", outputs="text")
+    iface.launch()
+
+
 if __name__ == "__main__":
     main()
