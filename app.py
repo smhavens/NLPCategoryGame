@@ -105,6 +105,7 @@ def greet(name):
     return "Hello " + name + "!!"
 
 def check_answer(guess:str):
+    guesses.append(guess)
     if guess.lower() == answer.lower():
         return "Correct!"
     else:
@@ -116,6 +117,7 @@ def main():
     word3 = "Sun"
     global answer 
     answer = "Moon"
+    global guesses
     guesses = []
     
     prompt = f"{word1} is to {word2} as {word3} is to ____"
