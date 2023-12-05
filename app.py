@@ -102,9 +102,31 @@ def finetune(train, eval):
 def greet(name):
     return "Hello " + name + "!!"
 
+def check_answer(guess:str, answer:str):
+    if guess.lower() == answer.lower():
+        return "Correct!"
+    else:
+        return "Try again!"
 
 def main():
-    iface = gr.Interface(fn=greet, inputs="text", outputs="text")
+    word1 = "Black"
+    word2 = "White"
+    word3 = "Sun"
+    answer = "Moon"
+    guesses = []
+    
+    prompt = "{word1} is to {word2} as {word3} is to ____"
+    with gr.Blocks() as iface:
+        gr.Markdown(prompt)
+        with gr.Tab("Guess"):
+            text_input = gr.Textbox()
+            text_output = gr.Textbox()
+            text_button = gr.Button("Submit")
+        with gr.Accordion("Open for previous guesses"):
+            for guess in guesses:
+                gr.Markdown(guess)
+        text_button.click(check_answer, inputs=[text_input,answer], outputs=text_output)
+    # iface = gr.Interface(fn=greet, inputs="text", outputs="text")
     iface.launch()
 
 
