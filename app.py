@@ -124,8 +124,8 @@ def main():
     with gr.Blocks() as iface:
         gr.Markdown(prompt)
         with gr.Tab("Guess"):
-            text_input = gr.Textbox("Guess")
-            text_output = gr.Textbox("Status")
+            text_input = gr.Textbox()
+            text_output = gr.Textbox()
             text_button = gr.Button("Submit")
         with gr.Accordion("Open for previous guesses"):
             for guess in guesses:
