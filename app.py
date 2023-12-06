@@ -14,6 +14,8 @@ import evaluate
 tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 
 # answer = "Pizza"
+guesses = []
+answer = "Pizza"
 
 
 #Mean Pooling - Take attention mask into account for correct averaging
@@ -105,6 +107,8 @@ def greet(name):
     return "Hello " + name + "!!"
 
 def check_answer(guess:str):
+    global guesses
+    global answer
     guesses = guesses.append(guess)
     if guess.lower() == answer.lower():
         return "Correct!"
@@ -115,10 +119,9 @@ def main():
     word1 = "Black"
     word2 = "White"
     word3 = "Sun"
-    global answer 
+    global answer
     answer = "Moon"
     global guesses
-    guesses = []
     
     prompt = f"{word1} is to {word2} as {word3} is to ____"
     with gr.Blocks() as iface:
