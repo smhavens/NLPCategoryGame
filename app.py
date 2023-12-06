@@ -121,7 +121,7 @@ def main():
     word3 = "Sun"
     global answer
     answer = "Moon"
-    # global guesses
+    global guesses
     
     prompt = f"{word1} is to {word2} as {word3} is to ____"
     with gr.Blocks() as iface:
