@@ -105,7 +105,7 @@ def greet(name):
     return "Hello " + name + "!!"
 
 def check_answer(guess:str):
-    guesses.append(guess)
+    guesses = guesses.append(guess)
     if guess.lower() == answer.lower():
         return "Correct!"
     else:
