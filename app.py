@@ -111,9 +111,9 @@ def check_answer(guess:str):
     global answer
     guesses.append(guess)
     if guess.lower() == answer.lower():
-        return "Correct!"
+        return "Correct!", guesses
     else:
-        return "Try again!"
+        return "Try again!", guesses
 
 def main():
     word1 = "Black"
@@ -131,9 +131,8 @@ def main():
             text_output = gr.Textbox()
             text_button = gr.Button("Submit")
         with gr.Accordion("Open for previous guesses"):
-            for guess in guesses:
-                gr.Markdown(guess)
-        text_button.click(check_answer, inputs=[text_input], outputs=text_output)
+            text_guesses = gr.Textbox()
+        text_button.click(check_answer, inputs=[text_input], outputs=[text_output, text_guesses])
     # iface = gr.Interface(fn=greet, inputs="text", outputs="text")
     iface.launch()
 
