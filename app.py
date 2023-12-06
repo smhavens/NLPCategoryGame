@@ -110,10 +110,15 @@ def check_answer(guess:str):
     global guesses
     global answer
     guesses.append(guess)
+    output = ""
+    for guess in guesses:
+        output += ("- " + guess + "\n")
+    output = output[:-2]
+    
     if guess.lower() == answer.lower():
-        return "Correct!", guesses
+        return "Correct!", output
     else:
-        return "Try again!", guesses
+        return "Try again!", output
 
 def main():
     word1 = "Black"
