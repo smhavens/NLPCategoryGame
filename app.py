@@ -113,7 +113,7 @@ def check_answer(guess:str):
     output = ""
     for guess in guesses:
         output += ("- " + guess + "\n")
-    output = output[:-2]
+    output = output[:-1]
     
     if guess.lower() == answer.lower():
         return "Correct!", output
