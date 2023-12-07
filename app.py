@@ -28,7 +28,7 @@ def mean_pooling(model_output, attention_mask):
 
 
 def tokenize_function(examples):
-    return tokenizer(examples["text"], padding="max_length", truncation=True)
+    return tokenizer(examples["text"])
 
 
 def compute_metrics(eval_pred):
@@ -51,12 +51,16 @@ def training():
     # small_train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(1000))
     # small_eval_dataset = tokenized_datasets["test"].shuffle(seed=42).select(range(1000))
     
+    dataset = dataset["train"].map(tokenize_function, batched=True)
+    dataset.set_format(type="torch", columns=["input_ids", "token_type_ids", "attention_mask", "label"])
+    dataset.format['type']
+    
+    print(dataset)
+    
     train_examples = []
     train_data = dataset['train']
     # For agility we only 1/2 of our available data
     n_examples = dataset['train'].num_rows // 2
-    
-    
     
     for i in range(n_examples):
         example = train_data[i]
