@@ -18,7 +18,7 @@ import subprocess
 import sys
 
 # !pip install https://huggingface.co/spacy/en_core_web_sm/resolve/main/en_core_web_sm-any-py3-none-any.whl
-subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'https://huggingface.co/spacy/en_core_web_sm/resolve/main/en_core_web_sm-any-py3-none-any.whl'])
+# subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'https://huggingface.co/spacy/en_core_web_sm/resolve/main/en_core_web_sm-any-py3-none-any.whl'])
 tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 nltk.download('stopwords')
 nlp = spacy.load("en_core_web_sm")
@@ -164,12 +164,9 @@ def finetune(train_dataloader):
     
     model.fit(train_objectives=[(train_dataloader, train_loss)], epochs=10)
     
+    model.save("ag_news_model")
     
-    model.save_to_hub(
-        "all-MiniLM-agNews", 
-        organization="smhavens",
-        train_datasets=["ag_news"],
-        )
+    model.save_to_hub("smhavens/all-MiniLM-agNews")
     # accuracy = compute_metrics(eval, metric)
     
     # training_args = TrainingArguments(output_dir="test_trainer", evaluation_strategy="epoch")
