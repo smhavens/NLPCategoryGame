@@ -63,7 +63,7 @@ def training():
         # print(example)
         train_examples.append(InputExample(texts=[example['text'], example['label']]))
         
-    train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
+    train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=25)
     
     
         
