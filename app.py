@@ -156,7 +156,7 @@ def finetune(train_dataloader):
     # USE THIS LINK
     # https://huggingface.co/blog/how-to-train-sentence-transformers
     
-    train_loss = losses.TripletLoss(model=model)
+    train_loss = losses.MegaBatchMarginLoss(model=model)
     
     model.fit(train_objectives=[(train_dataloader, train_loss)], epochs=10)
     
