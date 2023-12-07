@@ -82,6 +82,8 @@ def finetune(train_dataloader):
     
     train_loss = losses.TripletLoss(model=model)
     
+    print(train_dataloader)
+    
     model.fit(train_objectives=[(train_dataloader, train_loss)], epochs=10)
     
     # accuracy = compute_metrics(eval, metric)
