@@ -84,15 +84,15 @@ def training():
     # For agility we only 1/2 of our available data
     n_examples = dataset["train"].num_rows // 2
     # n_remaining = dataset["train"].num_rows - n_examples
-    dataset_clean = {}
-    # dataset_0 = []
-    # dataset_1 = []
-    # dataset_2 = []
-    # dataset_3 = []
-    for i in range(n_examples):
-        dataset_clean[i] = {}
-        dataset_clean[i]["text"] = normalize(train_data[i]["text"], lowercase=True, remove_stopwords=True)
-        dataset_clean[i]["label"] = train_data[i]["label"]
+    # dataset_clean = {}
+    # # dataset_0 = []
+    # # dataset_1 = []
+    # # dataset_2 = []
+    # # dataset_3 = []
+    # for i in range(n_examples):
+    #     dataset_clean[i] = {}
+    #     dataset_clean[i]["text"] = normalize(train_data[i]["text"], lowercase=True, remove_stopwords=True)
+    #     dataset_clean[i]["label"] = train_data[i]["label"]
         # if train_data[i]["label"] == 0:
         #     dataset_0.append(dataset_clean[i])
         # elif train_data[i]["label"] == 1:
@@ -108,7 +108,7 @@ def training():
     # print("Label lengths:", len(dataset_0), len(dataset_1), len(dataset_2), len(dataset_3))
     
     for i in range(n_examples):
-        example = dataset_clean[i]
+        example = train_data[i]
         # example_opposite = dataset_clean[-(i)]
         # print(example["text"])
         train_examples.append(InputExample(texts=[example['text']], label=example['label']))
