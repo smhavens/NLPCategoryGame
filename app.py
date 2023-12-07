@@ -139,6 +139,8 @@ def training():
         
     train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=25)
     
+    print("END DATALOADER")
+    
     # print(train_examples)
         
     embeddings = finetune(train_dataloader)
@@ -157,6 +159,8 @@ def finetune(train_dataloader):
     # https://huggingface.co/blog/how-to-train-sentence-transformers
     
     train_loss = losses.BatchHardSoftMarginTripletLoss(model=model)
+    
+    print("BEGIN FIT")
     
     model.fit(train_objectives=[(train_dataloader, train_loss)], epochs=10)
     
