@@ -162,7 +162,7 @@ def finetune(train_dataloader):
     
     
     model.save_to_hub(
-        "sentence-transformers/all-MiniLM-L6-v2", 
+        "all-MiniLM-agNews", 
         organization="smhavens",
         train_datasets=["ag_news"],
         )
