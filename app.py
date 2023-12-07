@@ -63,11 +63,11 @@ def training():
         # print(example)
         train_examples.append(InputExample(texts=[example['text'], example['label']]))
         
-    # train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
+    train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
     
     
         
-    embeddings = finetune(train_examples)
+    embeddings = finetune(train_dataloader)
     
     return (dataset['train'].num_rows, type(dataset['train'][0]), type(dataset['train'][0]['text']), dataset['train'][0], embeddings)
 
