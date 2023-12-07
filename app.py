@@ -52,7 +52,7 @@ def training():
     # small_eval_dataset = tokenized_datasets["test"].shuffle(seed=42).select(range(1000))
     
     train_examples = []
-    train_data = dataset['train']['text']
+    train_data = dataset['train']
     # For agility we only 1/2 of our available data
     n_examples = dataset['train'].num_rows // 2
     
@@ -60,7 +60,7 @@ def training():
     
     for i in range(n_examples):
         example = train_data[i]
-        print(example)
+        # print(example)
         train_examples.append(InputExample(texts=[example['id'], example['text']]))
         
     # train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
