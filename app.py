@@ -18,7 +18,7 @@ from nltk.corpus import stopwords
 
 tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 nltk.download('stopwords')
-nlp = spacy.load("en", disable=['parser', 'tagger', 'ner'])
+nlp = spacy.load("en_core_web_sm")
 stops = stopwords.words("english")
 
 # answer = "Pizza"
