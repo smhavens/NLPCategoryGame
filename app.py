@@ -64,12 +64,12 @@ def training():
     
     for i in range(n_examples):
         example = train_data[i]
-        # print(example)
+        print(example)
         train_examples.append(InputExample(texts=example['text'], label=example['label']))
         
     train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=25)
     
-    print(train_examples)
+    # print(train_examples)
         
     embeddings = finetune(train_dataloader)
     
