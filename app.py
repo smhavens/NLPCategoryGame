@@ -3,10 +3,13 @@ import spacy
 import math
 from datasets import load_dataset
 from sentence_transformers import SentenceTransformer
+from sentence_transformers import InputExample
+from sentence_transformers import losses
 from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassification
 from transformers import TrainingArguments, Trainer
 import torch
 import torch.nn.functional as F
+from torch.utils.data import DataLoader
 import numpy as np
 import evaluate
 
@@ -40,23 +43,34 @@ def training():
     dataset_id = "glue-cola"
     dataset = load_dataset("glue", "cola")
     dataset = dataset["train"]
-    tokenized_datasets = dataset.map(tokenize_function, batched=True)
+    # tokenized_datasets = dataset.map(tokenize_function, batched=True)
     
     print(f"- The {dataset_id} dataset has {dataset['train'].num_rows} examples.")
     print(f"- Each example is a {type(dataset['train'][0])} with a {type(dataset['train'][0]['set'])} as value.")
     print(f"- Examples look like this: {dataset['train'][0]}")
     
-    small_train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(1000))
-    small_eval_dataset = tokenized_datasets["test"].shuffle(seed=42).select(range(1000))
+    # small_train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(1000))
+    # small_eval_dataset = tokenized_datasets["test"].shuffle(seed=42).select(range(1000))
+    
+    train_examples = []
+    train_data = dataset['train']['set']
+    # For agility we only 1/2 of our available data
+    n_examples = dataset['train'].num_rows // 2
+    
+    for i in range(n_examples):
+        example = train_data[i]
+        train_examples.append(InputExample(texts=[example['query'], example['pos'][0], example['neg'][0]]))
+        
+    train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
     
     
-    
-    embeddings = finetune(small_train_dataset, small_eval_dataset)
+        
+    embeddings = finetune(train_dataloader)
     
     return (dataset['train'].num_rows, type(dataset['train'][0]), type(dataset['train'][0]['set']), dataset['train'][0], embeddings)
 
 
-def finetune(train, eval):
+def finetune(train_dataloader):
     # model = AutoModelForSequenceClassification.from_pretrained("bert-base-cased", num_labels=5)
     model_id = "sentence-transformers/all-MiniLM-L6-v2"
     model = SentenceTransformer(model_id)
@@ -66,20 +80,23 @@ def finetune(train, eval):
     # USE THIS LINK
     # https://huggingface.co/blog/how-to-train-sentence-transformers
     
+    train_loss = losses.TripletLoss(model=model)
+    
+    model.fit(train_objectives=[(train_dataloader, train_loss)], epochs=10)
     
     # accuracy = compute_metrics(eval, metric)
     
-    training_args = TrainingArguments(output_dir="test_trainer", evaluation_strategy="epoch")
+    # training_args = TrainingArguments(output_dir="test_trainer", evaluation_strategy="epoch")
     
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        train_dataset=train,
-        eval_dataset=eval,
-        compute_metrics=compute_metrics,
-    )
+    # trainer = Trainer(
+    #     model=model,
+    #     args=training_args,
+    #     train_dataset=train,
+    #     eval_dataset=eval,
+    #     compute_metrics=compute_metrics,
+    # )
     
-    trainer.train()
+    # trainer.train()
     
     sentences = ["This is an example sentence", "Each sentence is converted"]
 
@@ -91,8 +108,8 @@ def finetune(train, eval):
     sentences = ['This is an example sentence', 'Each sentence is converted']
 
     # Load model from HuggingFace Hub
-    tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
-    model = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
+    # tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
+    # model = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
 
     # Tokenize sentences
     encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt')
