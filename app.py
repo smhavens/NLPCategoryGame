@@ -85,10 +85,10 @@ def training():
     n_examples = dataset["train"].num_rows // 2
     # n_remaining = dataset["train"].num_rows - n_examples
     dataset_clean = {}
-    dataset_0 = {}
-    dataset_1 = {}
-    dataset_2 = {}
-    dataset_3 = {}
+    dataset_0 = []
+    dataset_1 = []
+    dataset_2 = []
+    dataset_3 = []
     for i in range(n_examples):
         dataset_clean[i] = {}
         dataset_clean[i]["text"] = normalize(train_data[i]["text"], lowercase=True, remove_stopwords=True)
