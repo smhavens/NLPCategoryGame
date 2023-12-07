@@ -58,9 +58,9 @@ def training():
     print(dataset)
     
     train_examples = []
-    train_data = dataset['train']
+    train_data = dataset
     # For agility we only 1/2 of our available data
-    n_examples = dataset['train'].num_rows // 2
+    n_examples = dataset.num_rows // 2
     
     for i in range(n_examples):
         example = train_data[i]
