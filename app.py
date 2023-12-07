@@ -117,25 +117,25 @@ def training():
         example = dataset_0[i]
         # example_opposite = dataset_0[-(i)]
         # print(example["text"])
-        train_examples.append(InputExample(texts=example['text'], label=0))
+        train_examples.append(InputExample(texts=[example['text']], label=0))
         
     for i in range(n_1):
         example = dataset_1[i]
         # example_opposite = dataset_1[-(i)]
         # print(example["text"])
-        train_examples.append(InputExample(texts=example['text'], label=1))
+        train_examples.append(InputExample(texts=[example['text']], label=1))
         
     for i in range(n_2):
         example = dataset_2[i]
         # example_opposite = dataset_2[-(i)]
         # print(example["text"])
-        train_examples.append(InputExample(texts=example['text'], label=2))
+        train_examples.append(InputExample(texts=[example['text']], label=2))
         
     for i in range(n_3):
         example = dataset_3[i]
         # example_opposite = dataset_3[-(i)]
         # print(example["text"])
-        train_examples.append(InputExample(texts=example['text'], label=3))
+        train_examples.append(InputExample(texts=[example['text']], label=3))
         
     train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=25)
     
@@ -156,7 +156,7 @@ def finetune(train_dataloader):
     # USE THIS LINK
     # https://huggingface.co/blog/how-to-train-sentence-transformers
     
-    train_loss = losses.BatchHardTripletLoss(model=model)
+    train_loss = losses.BatchHardSoftMarginTripletLoss(model=model)
     
     model.fit(train_objectives=[(train_dataloader, train_loss)], epochs=10)
     
