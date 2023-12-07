@@ -45,7 +45,7 @@ def training():
     # tokenized_datasets = dataset.map(tokenize_function, batched=True)
     
     print(f"- The {dataset_id} dataset has {dataset['train'].num_rows} examples.")
-    print(f"- Each example is a {type(dataset['train'][0])} with a {type(dataset['train'][0]['set'])} as value.")
+    print(f"- Each example is a {type(dataset['train'][0])} with a {type(dataset['train'][0]['text'])} as value.")
     print(f"- Examples look like this: {dataset['train'][0]}")
     
     # small_train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(1000))
