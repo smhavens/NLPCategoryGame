@@ -56,8 +56,11 @@ def training():
     # For agility we only 1/2 of our available data
     n_examples = dataset['train'].num_rows // 2
     
+    
+    
     for i in range(n_examples):
         example = train_data[i]
+        print(example["text"], example["id"])
         train_examples.append(InputExample(texts=[example['id'], example['text']]))
         
     # train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
