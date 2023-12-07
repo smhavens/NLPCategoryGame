@@ -41,6 +41,10 @@ def training():
     dataset = dataset["train"]
     tokenized_datasets = dataset.map(tokenize_function, batched=True)
     
+    print(f"- The {dataset_id} dataset has {dataset['train'].num_rows} examples.")
+    print(f"- Each example is a {type(dataset['train'][0])} with a {type(dataset['train'][0]['set'])} as value.")
+    print(f"- Examples look like this: {dataset['train'][0]}")
+    
     small_train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(1000))
     small_eval_dataset = tokenized_datasets["test"].shuffle(seed=42).select(range(1000))
     
@@ -50,9 +54,11 @@ def training():
 
 
 def finetune(train, eval):
-    model = AutoModelForSequenceClassification.from_pretrained("bert-base-cased", num_labels=5)
+    # model = AutoModelForSequenceClassification.from_pretrained("bert-base-cased", num_labels=5)
+    model_id = "sentence-transformers/all-MiniLM-L6-v2"
+    model = SentenceTransformer(model_id)
     
-    training_args = TrainingArguments(output_dir="test_trainer")
+    # training_args = TrainingArguments(output_dir="test_trainer")
     
     # USE THIS LINK
     # https://huggingface.co/blog/how-to-train-sentence-transformers
@@ -140,6 +146,8 @@ def main():
         text_button.click(check_answer, inputs=[text_input], outputs=[text_output, text_guesses])
     # iface = gr.Interface(fn=greet, inputs="text", outputs="text")
     iface.launch()
+    
+    training()
 
 
     
