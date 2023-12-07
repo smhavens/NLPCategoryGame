@@ -85,57 +85,57 @@ def training():
     n_examples = dataset["train"].num_rows // 2
     # n_remaining = dataset["train"].num_rows - n_examples
     dataset_clean = {}
-    dataset_0 = []
-    dataset_1 = []
-    dataset_2 = []
-    dataset_3 = []
+    # dataset_0 = []
+    # dataset_1 = []
+    # dataset_2 = []
+    # dataset_3 = []
     for i in range(n_examples):
         dataset_clean[i] = {}
         dataset_clean[i]["text"] = normalize(train_data[i]["text"], lowercase=True, remove_stopwords=True)
         dataset_clean[i]["label"] = train_data[i]["label"]
-        if train_data[i]["label"] == 0:
-            dataset_0.append(dataset_clean[i])
-        elif train_data[i]["label"] == 1:
-            dataset_1.append(dataset_clean[i])
-        elif train_data[i]["label"] == 2:
-            dataset_2.append(dataset_clean[i])
-        elif train_data[i]["label"] == 3:
-            dataset_3.append(dataset_clean[i])
-    n_0 = len(dataset_0) // 2
-    n_1 = len(dataset_1) // 2
-    n_2 = len(dataset_2) // 2
-    n_3 = len(dataset_3) // 2
-    print("Label lengths:", len(dataset_0), len(dataset_1), len(dataset_2), len(dataset_3))
+        # if train_data[i]["label"] == 0:
+        #     dataset_0.append(dataset_clean[i])
+        # elif train_data[i]["label"] == 1:
+        #     dataset_1.append(dataset_clean[i])
+        # elif train_data[i]["label"] == 2:
+        #     dataset_2.append(dataset_clean[i])
+        # elif train_data[i]["label"] == 3:
+        #     dataset_3.append(dataset_clean[i])
+    # n_0 = len(dataset_0) // 2
+    # n_1 = len(dataset_1) // 2
+    # n_2 = len(dataset_2) // 2
+    # n_3 = len(dataset_3) // 2
+    # print("Label lengths:", len(dataset_0), len(dataset_1), len(dataset_2), len(dataset_3))
     
-    # for i in range(n_examples):
-    #     example = dataset_clean[i]
-    #     example_opposite = dataset_clean[-(i)]
+    for i in range(n_examples):
+        example = dataset_clean[i]
+        # example_opposite = dataset_clean[-(i)]
+        # print(example["text"])
+        train_examples.append(InputExample(texts=[example['text']], label=example['label']))
+        
+    # for i in range(n_0):
+    #     example = dataset_0[i]
+    #     # example_opposite = dataset_0[-(i)]
     #     # print(example["text"])
-    #     train_examples.append(InputExample(texts=[example['text'], example_opposite["text"]]))
+    #     train_examples.append(InputExample(texts=[example['text']], label=0))
         
-    for i in range(n_0):
-        example = dataset_0[i]
-        # example_opposite = dataset_0[-(i)]
-        # print(example["text"])
-        train_examples.append(InputExample(texts=[example['text']], label=0))
+    # for i in range(n_1):
+    #     example = dataset_1[i]
+    #     # example_opposite = dataset_1[-(i)]
+    #     # print(example["text"])
+    #     train_examples.append(InputExample(texts=[example['text']], label=1))
         
-    for i in range(n_1):
-        example = dataset_1[i]
-        # example_opposite = dataset_1[-(i)]
-        # print(example["text"])
-        train_examples.append(InputExample(texts=[example['text']], label=1))
+    # for i in range(n_2):
+    #     example = dataset_2[i]
+    #     # example_opposite = dataset_2[-(i)]
+    #     # print(example["text"])
+    #     train_examples.append(InputExample(texts=[example['text']], label=2))
         
-    for i in range(n_2):
-        example = dataset_2[i]
-        # example_opposite = dataset_2[-(i)]
-        # print(example["text"])
-        train_examples.append(InputExample(texts=[example['text']], label=2))
-        
-    for i in range(n_3):
-        example = dataset_3[i]
-        # example_opposite = dataset_3[-(i)]
-        # print(example["text"])
-        train_examples.append(InputExample(texts=[example['text']], label=3))
+    # for i in range(n_3):
+    #     example = dataset_3[i]
+    #     # example_opposite = dataset_3[-(i)]
+    #     # print(example["text"])
+    #     train_examples.append(InputExample(texts=[example['text']], label=3))
         
     train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=25)
     
