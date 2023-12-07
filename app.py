@@ -65,7 +65,7 @@ def training():
         
     train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=25)
     
-    
+    print(train_examples)
         
     embeddings = finetune(train_dataloader)
     
