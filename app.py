@@ -1,5 +1,4 @@
 import gradio as gr
-import spacy
 import math
 from datasets import load_dataset
 from sentence_transformers import SentenceTransformer
@@ -40,7 +39,7 @@ def compute_metrics(eval_pred):
 
 
 def training():
-    dataset_id = "ag-news"
+    dataset_id = "ag_news"
     dataset = load_dataset(dataset_id)
     # dataset = dataset["train"]
     # tokenized_datasets = dataset.map(tokenize_function, batched=True)
