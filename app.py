@@ -86,7 +86,7 @@ def training():
     
     dataset_clean = {}
     for i in range(n_examples):
-        dataset_clean[i]["text"] = train_data[i]["text"].apply(normalize, lowercase=True, remove_stopwords=True)
+        dataset_clean[i]["text"] = normalize(train_data[i]["text"], lowercase=True, remove_stopwords=True)
         dataset_clean[i]["label"] = train_data[i]["label"]
     
     for i in range(n_examples):
