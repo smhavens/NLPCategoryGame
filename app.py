@@ -1,5 +1,6 @@
 import gradio as gr
 import math
+import spacy
 from datasets import load_dataset
 from sentence_transformers import SentenceTransformer
 from sentence_transformers import InputExample
@@ -11,9 +12,14 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import numpy as np
 import evaluate
+import nltk
+from nltk.corpus import stopwords
 
 
 tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
+nltk.download('stopwords')
+nlp = spacy.load("en", disable=['parser', 'tagger', 'ner'])
+stops = stopwords.words("english")
 
 # answer = "Pizza"
 guesses = []
@@ -25,6 +31,19 @@ def mean_pooling(model_output, attention_mask):
     token_embeddings = model_output[0] #First element of model_output contains all token embeddings
     input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+
+
+def normalize(comment, lowercase, remove_stopwords):
+    if lowercase:
+        comment = comment.lower()
+    comment = nlp(comment)
+    lemmatized = list()
+    for word in comment:
+        lemma = word.lemma_.strip()
+        if lemma:
+            if not remove_stopwords or (remove_stopwords and lemma not in stops):
+                lemmatized.append(lemma)
+    return " ".join(lemmatized)
 
 
 def tokenize_function(examples):
@@ -51,20 +70,25 @@ def training():
     # small_train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(1000))
     # small_eval_dataset = tokenized_datasets["test"].shuffle(seed=42).select(range(1000))
     
-    dataset = dataset["train"].map(tokenize_function, batched=True)
-    dataset.set_format(type="torch", columns=["input_ids", "token_type_ids", "attention_mask", "label"])
-    dataset.format['type']
+    # dataset = dataset["train"].map(tokenize_function, batched=True)
+    # dataset.set_format(type="torch", columns=["input_ids", "token_type_ids", "attention_mask", "label"])
+    # dataset.format['type']
     
-    print(dataset)
+    # print(dataset)
     
     train_examples = []
-    train_data = dataset
+    train_data = dataset["train"]
     # For agility we only 1/2 of our available data
-    n_examples = dataset.num_rows // 2
+    n_examples = dataset["train"].num_rows // 2
+    
+    dataset_clean = {}
+    for i in range(n_examples):
+        dataset_clean[i]["text"] = train_data[i]["text"].apply(normalize, lowercase=True, remove_stopwords=True)
+        dataset_clean[i]["label"] = train_data[i]["label"]
     
     for i in range(n_examples):
-        example = train_data[i]
-        print(example["text"])
+        example = dataset_clean[i]
+        # print(example["text"])
         train_examples.append(InputExample(texts=example['text'], label=example['label']))
         
     train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=25)
