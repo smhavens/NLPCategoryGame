@@ -59,7 +59,7 @@ def training():
     
     for i in range(n_examples):
         example = train_data[i]
-        train_examples.append(InputExample(texts=[example['sentence'], example['label'], example['id']]))
+        train_examples.append(InputExample(texts=[example['sentence'], example['label'], example['idx']]))
         
     train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
     
