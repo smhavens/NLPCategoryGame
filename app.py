@@ -40,34 +40,34 @@ def compute_metrics(eval_pred):
 
 
 def training():
-    dataset_id = "glue-cola"
-    dataset = load_dataset("glue", "cola")
-    dataset = dataset["train"]
+    dataset_id = "ag-news"
+    dataset = load_dataset(dataset_id)
+    # dataset = dataset["train"]
     # tokenized_datasets = dataset.map(tokenize_function, batched=True)
     
-    # print(f"- The {dataset_id} dataset has {dataset['train'].num_rows} examples.")
-    # print(f"- Each example is a {type(dataset['train'][0])} with a {type(dataset['train'][0]['set'])} as value.")
-    # print(f"- Examples look like this: {dataset['train'][0]}")
+    print(f"- The {dataset_id} dataset has {dataset['train'].num_rows} examples.")
+    print(f"- Each example is a {type(dataset['train'][0])} with a {type(dataset['train'][0]['set'])} as value.")
+    print(f"- Examples look like this: {dataset['train'][0]}")
     
     # small_train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(1000))
     # small_eval_dataset = tokenized_datasets["test"].shuffle(seed=42).select(range(1000))
     
     train_examples = []
-    train_data = dataset
+    train_data = dataset['train']['text']
     # For agility we only 1/2 of our available data
-    n_examples = dataset.num_rows // 2
+    n_examples = dataset['train'].num_rows // 2
     
     for i in range(n_examples):
         example = train_data[i]
-        train_examples.append(InputExample(texts=[example['sentence'], example['label'], example['idx']]))
+        train_examples.append(InputExample(texts=[example['id'], example['text']]))
         
-    train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
+    # train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
     
     
         
-    embeddings = finetune(train_dataloader)
+    embeddings = finetune(train_examples)
     
-    return (dataset.num_rows, type(dataset[0]), type(dataset[0]['set']), dataset[0], embeddings)
+    return (dataset['train'].num_rows, type(dataset['train'][0]), type(dataset['train'][0]['text']), dataset['train'][0], embeddings)
 
 
 def finetune(train_dataloader):
@@ -81,8 +81,6 @@ def finetune(train_dataloader):
     # https://huggingface.co/blog/how-to-train-sentence-transformers
     
     train_loss = losses.TripletLoss(model=model)
-    
-    print(train_dataloader)
     
     model.fit(train_objectives=[(train_dataloader, train_loss)], epochs=10)
     
