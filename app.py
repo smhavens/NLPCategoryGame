@@ -37,6 +37,7 @@ def compute_metrics(eval_pred):
 
 
 def training():
+    dataset_id = "glue-cola"
     dataset = load_dataset("glue", "cola")
     dataset = dataset["train"]
     tokenized_datasets = dataset.map(tokenize_function, batched=True)
@@ -50,7 +51,9 @@ def training():
     
     
     
-    finetune(small_train_dataset, small_eval_dataset)
+    embeddings = finetune(small_train_dataset, small_eval_dataset)
+    
+    return (dataset['train'].num_rows, type(dataset['train'][0]), type(dataset['train'][0]['set']), dataset['train'][0], embeddings)
 
 
 def finetune(train, eval):
@@ -106,6 +109,7 @@ def finetune(train, eval):
 
     print("Sentence embeddings:")
     print(sentence_embeddings)
+    return sentence_embeddings
 
  
 
@@ -134,6 +138,8 @@ def main():
     answer = "Moon"
     global guesses
     
+    num_rows, data_type, value, example, embeddings = training()
+    
     prompt = f"{word1} is to {word2} as {word3} is to ____"
     with gr.Blocks() as iface:
         gr.Markdown(prompt)
@@ -143,11 +149,15 @@ def main():
             text_button = gr.Button("Submit")
         with gr.Accordion("Open for previous guesses"):
             text_guesses = gr.Textbox()
+        with gr.Tab("Testing"):
+            gr.Markdown(f"""Number of rows in dataset is {num_rows}, with each having type {data_type} and value {value}.
+                        An example is {example}.
+                        The Embeddings are {embeddings}.""")
         text_button.click(check_answer, inputs=[text_input], outputs=[text_output, text_guesses])
     # iface = gr.Interface(fn=greet, inputs="text", outputs="text")
     iface.launch()
     
-    training()
+    
 
 
     
