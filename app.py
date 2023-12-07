@@ -160,6 +160,12 @@ def finetune(train_dataloader):
     
     model.fit(train_objectives=[(train_dataloader, train_loss)], epochs=10)
     
+    
+    model.save_to_hub(
+        "sentence-transformers/all-MiniLM-L6-v2", 
+        organization="smhavens",
+        train_datasets=["ag_news"],
+        )
     # accuracy = compute_metrics(eval, metric)
     
     # training_args = TrainingArguments(output_dir="test_trainer", evaluation_strategy="epoch")
