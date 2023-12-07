@@ -53,13 +53,13 @@ def training():
     # small_eval_dataset = tokenized_datasets["test"].shuffle(seed=42).select(range(1000))
     
     train_examples = []
-    train_data = dataset['train']['set']
+    train_data = dataset
     # For agility we only 1/2 of our available data
-    n_examples = dataset['train'].num_rows // 2
+    n_examples = dataset.num_rows // 2
     
     for i in range(n_examples):
         example = train_data[i]
-        train_examples.append(InputExample(texts=[example['query'], example['pos'][0], example['neg'][0]]))
+        train_examples.append(InputExample(texts=[example['sentence'], example['label'], example['id']]))
         
     train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
     
@@ -67,7 +67,7 @@ def training():
         
     embeddings = finetune(train_dataloader)
     
-    return (dataset['train'].num_rows, type(dataset['train'][0]), type(dataset['train'][0]['set']), dataset['train'][0], embeddings)
+    return (dataset.num_rows, type(dataset[0]), type(dataset[0]['set']), dataset[0], embeddings)
 
 
 def finetune(train_dataloader):
