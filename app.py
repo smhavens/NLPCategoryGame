@@ -19,7 +19,7 @@ import sys
 
 # !pip install https://huggingface.co/spacy/en_core_web_sm/resolve/main/en_core_web_sm-any-py3-none-any.whl
 # subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'https://huggingface.co/spacy/en_core_web_sm/resolve/main/en_core_web_sm-any-py3-none-any.whl'])
-tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
+# tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
 nltk.download('stopwords')
 nlp = spacy.load("en_core_web_sm")
 stops = stopwords.words("english")
@@ -31,7 +31,7 @@ answer = "Pizza"
 
 #Mean Pooling - Take attention mask into account for correct averaging
 def mean_pooling(model_output, attention_mask):
-    token_embeddings = model_output[0] #First element of model_output contains all token embeddings
+    token_embeddings = model_output['token_embeddings'] #First element of model_output contains all token embeddings
     input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
@@ -49,8 +49,8 @@ def normalize(comment, lowercase, remove_stopwords):
     return " ".join(lemmatized)
 
 
-def tokenize_function(examples):
-    return tokenizer(examples["text"])
+# def tokenize_function(examples):
+#     return tokenizer(examples["text"])
 
 
 def compute_metrics(eval_pred):
@@ -181,28 +181,56 @@ def finetune(train_dataloader):
     
     # trainer.train()
     
+def embeddings():
+    model = SentenceTransformer("ag_news_model")
+    device = torch.device('cuda:0')
+    model = model.to(device)
     sentences = ["This is an example sentence", "Each sentence is converted"]
 
     # model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
     embeddings = model.encode(sentences)
-    print(embeddings)
+    # print(embeddings)
     
     # Sentences we want sentence embeddings for
     sentences = ['This is an example sentence', 'Each sentence is converted']
 
     # Load model from HuggingFace Hub
-    # tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
+    tokenizer = AutoTokenizer.from_pretrained('ag_news_model')
     # model = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
 
     # Tokenize sentences
     encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt')
 
+    # print(model.device)
+    # print(encoded_input["input_ids"].device)
+    # print(encoded_input["attention_mask"].device)
+    # print(encoded_input["token_type_ids"].device)
+    encoded_input["input_ids"] = encoded_input["input_ids"].to(device)
+    encoded_input["attention_mask"] = encoded_input["attention_mask"].to(device)
+    encoded_input['token_type_ids'] = encoded_input['token_type_ids'].to(device)
+    # print(encoded_input)
+    
+    # print(encoded_input["input_ids"].device)
+    # print(encoded_input["attention_mask"].device)
+    # print(encoded_input["token_type_ids"].device)
+    
+    encoded_input['input'] = {'input_ids':encoded_input['input_ids'], 'attention_mask':encoded_input['attention_mask']}
+    
+    #  + encoded_input['token_type_ids'] + encoded_input['attention_mask']
+    del encoded_input['input_ids']
+    del encoded_input['token_type_ids']
+    del encoded_input['attention_mask']
+
+    # print(encoded_input)
+    
+    # encoded_input.to(device)
     # Compute token embeddings
     with torch.no_grad():
         model_output = model(**encoded_input)
 
+    print(model_output)
     # Perform pooling
-    sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
+    sentence_embeddings = mean_pooling(model_output, encoded_input['input']["attention_mask"])
 
     # Normalize embeddings
     sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
@@ -238,7 +266,8 @@ def main():
     answer = "Moon"
     global guesses
     
-    num_rows, data_type, value, example, embeddings = training()
+    # num_rows, data_type, value, example, embeddings = training()
+    sent_embeddings = embeddings()
     
     prompt = f"{word1} is to {word2} as {word3} is to ____"
     with gr.Blocks() as iface:
@@ -250,9 +279,7 @@ def main():
         with gr.Accordion("Open for previous guesses"):
             text_guesses = gr.Textbox()
         with gr.Tab("Testing"):
-            gr.Markdown(f"""Number of rows in dataset is {num_rows}, with each having type {data_type} and value {value}.
-                        An example is {example}.
-                        The Embeddings are {embeddings}.""")
+            gr.Markdown(f"""The Embeddings are {sent_embeddings}.""")
         text_button.click(check_answer, inputs=[text_input], outputs=[text_output, text_guesses])
     # iface = gr.Interface(fn=greet, inputs="text", outputs="text")
     iface.launch()

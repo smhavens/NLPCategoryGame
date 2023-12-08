@@ -16,10 +16,13 @@ import nltk
 from nltk.corpus import stopwords
 import subprocess
 import sys
+from transformers import DataCollatorWithPadding
+
 
 # !pip install https://huggingface.co/spacy/en_core_web_sm/resolve/main/en_core_web_sm-any-py3-none-any.whl
 # subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'https://huggingface.co/spacy/en_core_web_sm/resolve/main/en_core_web_sm-any-py3-none-any.whl'])
-tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
+# tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
+# data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 # nltk.download('stopwords')
 # nlp = spacy.load("en_core_web_sm")
 # stops = stopwords.words("english")
@@ -49,8 +52,8 @@ def mean_pooling(model_output, attention_mask):
 #     return " ".join(lemmatized)
 
 
-def tokenize_function(examples):
-    return tokenizer(examples["text"])
+# def tokenize_function(examples):
+#     return tokenizer(examples["text"], truncation=True)
 
 
 def compute_metrics(eval_pred):
@@ -62,6 +65,8 @@ def compute_metrics(eval_pred):
 
 def training():
     dataset_id = "ag_news"
+    
+    print("GETTING DATASET")
     dataset = load_dataset(dataset_id)
     # dataset = dataset["train"]
     # tokenized_datasets = dataset.map(tokenize_function, batched=True)
@@ -76,6 +81,10 @@ def training():
     # dataset = dataset["train"].map(tokenize_function, batched=True)
     # dataset.set_format(type="torch", columns=["input_ids", "token_type_ids", "attention_mask", "label"])
     # dataset.format['type']
+    
+    # tokenized_news = dataset.map(tokenize_function, batched=True)
+    
+    # model = AutoModelForSequenceClassification.from_pretrained("sentence-transformers/all-MiniLM-L6-v2", num_labels=2)
     
     # print(dataset)
     
@@ -152,6 +161,8 @@ def finetune(train_dataloader):
     # model = AutoModelForSequenceClassification.from_pretrained("bert-base-cased", num_labels=5)
     model_id = "sentence-transformers/all-MiniLM-L6-v2"
     model = SentenceTransformer(model_id)
+    device = torch.device('cuda:0')
+    model = model.to(device)
     
     # training_args = TrainingArguments(output_dir="test_trainer")
     
@@ -181,35 +192,35 @@ def finetune(train_dataloader):
     
     # trainer.train()
     
-    sentences = ["This is an example sentence", "Each sentence is converted"]
+    # sentences = ["This is an example sentence", "Each sentence is converted"]
 
-    # model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-    embeddings = model.encode(sentences)
-    print(embeddings)
+    # # model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+    # embeddings = model.encode(sentences)
+    # print(embeddings)
     
-    # Sentences we want sentence embeddings for
-    sentences = ['This is an example sentence', 'Each sentence is converted']
+    # # Sentences we want sentence embeddings for
+    # sentences = ['This is an example sentence', 'Each sentence is converted']
 
-    # Load model from HuggingFace Hub
-    # tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
-    # model = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
+    # # Load model from HuggingFace Hub
+    # # tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
+    # # model = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
 
-    # Tokenize sentences
-    encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt')
+    # # Tokenize sentences
+    # encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt')
 
-    # Compute token embeddings
-    with torch.no_grad():
-        model_output = model(**encoded_input)
+    # # Compute token embeddings
+    # with torch.no_grad():
+    #     model_output = model(**encoded_input)
 
-    # Perform pooling
-    sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
+    # # Perform pooling
+    # sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
 
-    # Normalize embeddings
-    sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
+    # # Normalize embeddings
+    # sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
 
-    print("Sentence embeddings:")
-    print(sentence_embeddings)
-    return sentence_embeddings
+    # print("Sentence embeddings:")
+    # print(sentence_embeddings)
+    return 0
 
  
 
@@ -231,6 +242,7 @@ def check_answer(guess:str):
         return "Try again!", output
 
 def main():
+    print("BEGIN")
     word1 = "Black"
     word2 = "White"
     word3 = "Sun"
