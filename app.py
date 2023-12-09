@@ -150,7 +150,8 @@ def finetune(train_dataloader):
     
 def get_model():
     model = SentenceTransformer("bert-analogies")
-    device = torch.device('cuda:0')
+    gpu_available = torch.cuda.is_available()
+    device = torch.device("cuda" if gpu_available else "cpu")
     model = model.to(device)
     return model
 
