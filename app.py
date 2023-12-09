@@ -5,6 +5,8 @@ from datasets import load_dataset
 from sentence_transformers import SentenceTransformer
 from sentence_transformers import InputExample
 from sentence_transformers import losses
+from sentence_transformers import util
+from transformers import pipeline
 from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassification
 from transformers import TrainingArguments, Trainer
 import torch
@@ -16,6 +18,7 @@ import nltk
 from nltk.corpus import stopwords
 import subprocess
 import sys
+import random
 
 # !pip install https://huggingface.co/spacy/en_core_web_sm/resolve/main/en_core_web_sm-any-py3-none-any.whl
 subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'https://huggingface.co/spacy/en_core_web_sm/resolve/main/en_core_web_sm-any-py3-none-any.whl'])
@@ -23,10 +26,20 @@ subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'https://huggingf
 nltk.download('stopwords')
 nlp = spacy.load("en_core_web_sm")
 stops = stopwords.words("english")
+ROMAN_CONSTANTS = (
+            ( "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX" ),
+            ( "", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC" ),
+            ( "", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM" ),
+            ( "", "M", "MM", "MMM", "",   "",  "-",  "",    "",     ""   ),
+        )
 
 # answer = "Pizza"
 guesses = []
-answer = "Pizza"
+return_guesses = []
+answer = "Moon"
+word1 = "Black"
+word2 = "White"
+word3 = "Sun"
 
 
 #Mean Pooling - Take attention mask into account for correct averaging
@@ -134,65 +147,108 @@ def finetune(train_dataloader):
     
     # trainer.train()
     
-def embeddings():
-    model = SentenceTransformer("ag_news_model")
+    
+def get_model():
+    model = SentenceTransformer("bert-analogies")
     device = torch.device('cuda:0')
     model = model.to(device)
-    sentences = ["This is an example sentence", "Each sentence is converted"]
+    return model
 
-    # model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+
+def cosine_scores(model, sentence):
+    global word1
+    global word2
+    global word3
+    # sentence1 = f"{word1} is to {word2} as"
+    embeddings1 = model.encode(sentence, convert_to_tensor=True)
+
+def embeddings(model, sentences):
+    gpu_available = torch.cuda.is_available()
+    device = torch.device("cuda" if gpu_available else "cpu")
+    # device = torch.device('cuda:0')
     embeddings = model.encode(sentences)
-    # print(embeddings)
-    
-    # Sentences we want sentence embeddings for
-    sentences = ['This is an example sentence', 'Each sentence is converted']
+    global word1
+    global word2
+    global word3
 
     # Load model from HuggingFace Hub
-    tokenizer = AutoTokenizer.from_pretrained('ag_news_model')
-    # model = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
-
-    # Tokenize sentences
+    tokenizer = AutoTokenizer.from_pretrained('bert-analogies')
     encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt')
-
-    # print(model.device)
-    # print(encoded_input["input_ids"].device)
-    # print(encoded_input["attention_mask"].device)
-    # print(encoded_input["token_type_ids"].device)
+    token_ids = tokenizer.encode(sentences, return_tensors='pt')
+    blank_id = tokenizer.mask_token_id
+    blank_id_idx = torch.where(encoded_input["input_ids"] == blank_id)[1]
+    
     encoded_input["input_ids"] = encoded_input["input_ids"].to(device)
     encoded_input["attention_mask"] = encoded_input["attention_mask"].to(device)
     encoded_input['token_type_ids'] = encoded_input['token_type_ids'].to(device)
-    # print(encoded_input)
-    
-    # print(encoded_input["input_ids"].device)
-    # print(encoded_input["attention_mask"].device)
-    # print(encoded_input["token_type_ids"].device)
     
     encoded_input['input'] = {'input_ids':encoded_input['input_ids'], 'attention_mask':encoded_input['attention_mask']}
     
-    #  + encoded_input['token_type_ids'] + encoded_input['attention_mask']
     del encoded_input['input_ids']
     del encoded_input['token_type_ids']
     del encoded_input['attention_mask']
 
-    # print(encoded_input)
-    
-    # encoded_input.to(device)
-    # Compute token embeddings
     with torch.no_grad():
+        # output = model(encoded_input)
+        print(encoded_input)
         model_output = model(**encoded_input)
+        # output = model(encoded_input_topk)
+    
+    unmasker = pipeline('fill-mask', model='bert-analogies')
+    guesses = unmasker(sentences)
+    print(guesses)
 
-    print(model_output)
     # Perform pooling
     sentence_embeddings = mean_pooling(model_output, encoded_input['input']["attention_mask"])
 
     # Normalize embeddings
     sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
 
-    print("Sentence embeddings:")
-    print(sentence_embeddings)
-    return sentence_embeddings
+    potential_words = []
+    for guess in guesses:
+        temp_word = guess['token_str']
+        if temp_word[0].isalpha() and temp_word not in stops and temp_word not in ROMAN_CONSTANTS:
+            potential_words.append(guess['token_str'])
 
- 
+    return potential_words
+
+
+def random_word():
+    with open('ag_news_model/vocab.txt', 'r') as file:
+        line = ""
+        content = file.readlines()
+        length = len(content)
+        while line == "":
+            rand_line = random.randrange(1997, length)
+            
+            if content[rand_line][0].isalpha() and content[rand_line][:-1] not in stops and content[rand_line][:-1] not in ROMAN_CONSTANTS:
+                line = content[rand_line]
+            else:
+                print(f"{content[rand_line]} is not alpha or is a stop word")
+        # for num, aline in enumerate(file, 1997):
+        #     if random.randrange(num) and aline.isalpha():
+        #         continue
+        #     # elif not aline.isalpha():
+                
+        #     line = aline
+    print(line)
+    return line[:-1]
+
+
+def generate_prompt(model):
+    global word1
+    global word2
+    global word3
+    global answer
+    word1 = random_word()
+    word2 = random_word()
+    word3 = random_word()
+    sentence = f"{word1} is to {word2} as {word3} is to [MASK]"
+    print(sentence)
+    answer = embeddings(model, sentence)[0]
+    print("ANSWER IS", answer)
+    # cosine_scores(model, sentence)
+
 
 def greet(name):
     return "Hello " + name + "!!"
@@ -200,29 +256,46 @@ def greet(name):
 def check_answer(guess:str):
     global guesses
     global answer
-    guesses.append(guess)
+    global return_guesses
+    model = get_model()
     output = ""
-    for guess in guesses:
-        output += ("- " + guess + "\n")
+    protected_guess = guess
+    sentence = f"{word1} is to {word2} as [MASK] is to {guess}"
+    other_word = embeddings(model, sentence)[0]
+    guesses.append(guess)
+    print("GUESS IS", guess)
+    return_guess = f"{guess}: {word1} is to {word2} as {other_word} is to {guess}"
+    print("GUESS IS", guess)
+    return_guesses.append(return_guess)
+    for guess in return_guesses:
+        output += (guess + "\n")
     output = output[:-1]
+    print("GUESS IS", protected_guess)
     
-    if guess.lower() == answer.lower():
+    print("IS", protected_guess, "EQUAL TO", answer, ":", protected_guess.lower() == answer.lower())
+    if protected_guess.lower() == answer.lower():
         return "Correct!", output
     else:
+        
         return "Try again!", output
 
 def main():
-    word1 = "Black"
-    word2 = "White"
-    word3 = "Sun"
+    global word1
+    global word2
+    global word3
     global answer
-    answer = "Moon"
+    # answer = "Moon"
     global guesses
     
+    
     # num_rows, data_type, value, example, embeddings = training()
-    sent_embeddings = embeddings()
+    # sent_embeddings = embeddings()
+    model = get_model() 
+    generate_prompt(model)
     
     prompt = f"{word1} is to {word2} as {word3} is to ____"
+    print(prompt)
+    print("TESTING EMBEDDINGS")
     with gr.Blocks() as iface:
         gr.Markdown(prompt)
         with gr.Tab("Guess"):
@@ -231,8 +304,8 @@ def main():
             text_button = gr.Button("Submit")
         with gr.Accordion("Open for previous guesses"):
             text_guesses = gr.Textbox()
-        with gr.Tab("Testing"):
-            gr.Markdown(f"""The Embeddings are {sent_embeddings}.""")
+        # with gr.Tab("Testing"):
+        #     gr.Markdown(f"""The Embeddings are {sent_embeddings}.""")
         text_button.click(check_answer, inputs=[text_input], outputs=[text_output, text_guesses])
     # iface = gr.Interface(fn=greet, inputs="text", outputs="text")
     iface.launch()
