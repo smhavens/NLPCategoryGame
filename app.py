@@ -31,6 +31,10 @@ ROMAN_CONSTANTS = (
             ( "", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC" ),
             ( "", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM" ),
             ( "", "M", "MM", "MMM", "",   "",  "-",  "",    "",     ""   ),
+            ( "", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix" ),
+            ( "", "x", "xx", "xxx", "xl", "l", "lx", "lxx", "lxxx", "xc" ),
+            ( "", "c", "cc", "ccc", "cd", "d", "dc", "dcc", "dccc", "cm" ),
+            ( "", "m", "mm", "mmm", "",   "",  "-",  "",    "",     ""   ),
         )
 
 # answer = "Pizza"
@@ -175,9 +179,9 @@ def embeddings(model, sentences):
     # Load model from HuggingFace Hub
     tokenizer = AutoTokenizer.from_pretrained('bert-analogies')
     encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt')
-    token_ids = tokenizer.encode(sentences, return_tensors='pt')
-    blank_id = tokenizer.mask_token_id
-    blank_id_idx = torch.where(encoded_input["input_ids"] == blank_id)[1]
+    # token_ids = tokenizer.encode(sentences, return_tensors='pt')
+    # blank_id = tokenizer.mask_token_id
+    # blank_id_idx = torch.where(encoded_input["input_ids"] == blank_id)[1]
     
     encoded_input["input_ids"] = encoded_input["input_ids"].to(device)
     encoded_input["attention_mask"] = encoded_input["attention_mask"].to(device)
@@ -210,8 +214,12 @@ def embeddings(model, sentences):
         temp_word = guess['token_str']
         if temp_word[0].isalpha() and temp_word not in stops and temp_word not in ROMAN_CONSTANTS:
             potential_words.append(guess['token_str'])
+            
+    rand_index = random.randint(0, len(potential_words) - 1)
+    print("THE LENGTH OF POTENTIAL WORDS FOR", sentences, "IS", len(potential_words), "AND THE RANDOM INDEX CHOSEN IS", rand_index)
+    chosen_word = potential_words[rand_index]
 
-    return potential_words
+    return chosen_word
 
 
 def random_word():
@@ -242,12 +250,14 @@ def generate_prompt(model):
     global word3
     global answer
     word1 = random_word()
-    word2 = random_word()
+    # word2 = random_word()
+    word2 = embeddings(model, f"{word1} is to [MASK].")
     word3 = random_word()
-    sentence = f"{word1} is to {word2} as {word3} is to [MASK]"
+    sentence = f"{word1} is to {word2} as {word3} is to [MASK]."
     print(sentence)
-    answer = embeddings(model, sentence)[0]
+    answer = embeddings(model, sentence)
     print("ANSWER IS", answer)
+    return f"# {word1} is to {word2} as {word3} is to ___."
     # cosine_scores(model, sentence)
 
 
@@ -258,27 +268,37 @@ def check_answer(guess:str):
     global guesses
     global answer
     global return_guesses
+    global word1
+    global word2
+    global word3
+    
     model = get_model()
     output = ""
     protected_guess = guess
-    sentence = f"{word1} is to {word2} as [MASK] is to {guess}"
-    other_word = embeddings(model, sentence)[0]
+    sentence = f"{word1} is to {word2} as [MASK] is to {guess}."
+   
+    other_word = embeddings(model, sentence)
     guesses.append(guess)
-    print("GUESS IS", guess)
-    return_guess = f"{guess}: {word1} is to {word2} as {other_word} is to {guess}"
-    print("GUESS IS", guess)
-    return_guesses.append(return_guess)
-    for guess in return_guesses:
-        output += (guess + "\n")
-    output = output[:-1]
-    print("GUESS IS", protected_guess)
     
-    print("IS", protected_guess, "EQUAL TO", answer, ":", protected_guess.lower() == answer.lower())
+    
+    
+    for guess in return_guesses:
+        output += ("- " + guess + "<br>")
+    
+    # output = output[:-1]
+    prompt = f"{word1} is to {word2} as {word3} is to ___."
+    # print("IS", protected_guess, "EQUAL TO", answer, ":", protected_guess.lower() == answer.lower())
+    
     if protected_guess.lower() == answer.lower():
-        return "Correct!", output
+        return_guesses[len(return_guesses)-1] = f"{word1} is to {word2} as {word3} is to {protected_guess}."
+        output += f"- <span style='color:green'>{return_guesses[-1]}</span>"
+        new_prompt = generate_prompt(model)
+        return new_prompt, "Correct!", output
     else:
-        
-        return "Try again!", output
+        return_guess = f"{guess}: {word1} is to {word2} as {other_word} is to {protected_guess}."
+        return_guesses.append(return_guess)
+        output += return_guess
+        return prompt, "Try again!", output
 
 def main():
     global word1
@@ -298,16 +318,16 @@ def main():
     print(prompt)
     print("TESTING EMBEDDINGS")
     with gr.Blocks() as iface:
-        gr.Markdown(prompt)
+        mark_question = gr.Markdown(prompt)
         with gr.Tab("Guess"):
             text_input = gr.Textbox()
             text_output = gr.Textbox()
             text_button = gr.Button("Submit")
         with gr.Accordion("Open for previous guesses"):
-            text_guesses = gr.Textbox()
+            text_guesses = gr.Markdown()
         # with gr.Tab("Testing"):
         #     gr.Markdown(f"""The Embeddings are {sent_embeddings}.""")
-        text_button.click(check_answer, inputs=[text_input], outputs=[text_output, text_guesses])
+        text_button.click(check_answer, inputs=[text_input], outputs=[mark_question, text_output, text_guesses])
     # iface = gr.Interface(fn=greet, inputs="text", outputs="text")
     iface.launch()
     
