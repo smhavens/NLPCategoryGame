@@ -219,14 +219,14 @@ def check_answer(guess:str):
     # print("IS", protected_guess, "EQUAL TO", answer, ":", protected_guess.lower() == answer.lower())
     
     if protected_guess.lower() == answer.lower():
-        return_guesses[len(return_guesses)-1] = f"{word1} is to {word2} as {word3} is to {protected_guess}."
-        output += f"- <span style='color:green'>{return_guesses[-1]}</span>"
+        return_guesses.append(f"{word1} is to {word2} as {word3} is to {protected_guess}.")
+        output += f"<span style='color:green'>- {return_guesses[-1]}</span><br>"
         new_prompt = generate_prompt(model)
         return new_prompt, "Correct!", output
     else:
         return_guess = f"{guess}: {word1} is to {word2} as {other_word} is to {protected_guess}."
         return_guesses.append(return_guess)
-        output += return_guess
+        output += ("- " + return_guess + " <br>")
         return prompt, "Try again!", output
 
 def main():
