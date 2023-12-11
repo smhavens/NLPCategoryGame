@@ -23,6 +23,7 @@ import random
 # !pip install https://huggingface.co/spacy/en_core_web_sm/resolve/main/en_core_web_sm-any-py3-none-any.whl
 subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'https://huggingface.co/spacy/en_core_web_sm/resolve/main/en_core_web_sm-any-py3-none-any.whl'])
 # tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
+model_base = "bert-analogies"
 nltk.download('stopwords')
 nlp = spacy.load("en_core_web_sm")
 stops = stopwords.words("english")
@@ -75,85 +76,11 @@ def compute_metrics(eval_pred):
     predictions = np.argmax(logits, axis=-1)
     metric = evaluate.load("accuracy")
     return metric.compute(predictions=predictions, references=labels)
-
-
-def training():
-    dataset_id = "ag_news"
-    dataset = load_dataset(dataset_id)
-    # dataset = dataset["train"]
-    # tokenized_datasets = dataset.map(tokenize_function, batched=True)
-    
-    print(f"- The {dataset_id} dataset has {dataset['train'].num_rows} examples.")
-    print(f"- Each example is a {type(dataset['train'][0])} with a {type(dataset['train'][0]['text'])} as value.")
-    print(f"- Examples look like this: {dataset['train'][0]}")
-    
-    # small_train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(1000))
-    # small_eval_dataset = tokenized_datasets["test"].shuffle(seed=42).select(range(1000))
-    
-    # dataset = dataset["train"].map(tokenize_function, batched=True)
-    # dataset.set_format(type="torch", columns=["input_ids", "token_type_ids", "attention_mask", "label"])
-    # dataset.format['type']
-    
-    # print(dataset)
-    
-    train_examples = []
-    train_data = dataset["train"]
-    # For agility we only 1/2 of our available data
-    n_examples = dataset["train"].num_rows // 2
-    
-    for i in range(n_examples):
-        example = train_data[i]
-        # example_opposite = dataset_clean[-(i)]
-        # print(example["text"])
-        train_examples.append(InputExample(texts=[example['text']], label=example['label']))
-        
-    train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=25)
-    
-    print("END DATALOADER")
-    
-    # print(train_examples)
-        
-    embeddings = finetune(train_dataloader)
-    
-    return (dataset['train'].num_rows, type(dataset['train'][0]), type(dataset['train'][0]['text']), dataset['train'][0], embeddings)
-
-
-def finetune(train_dataloader):
-    # model = AutoModelForSequenceClassification.from_pretrained("bert-base-cased", num_labels=5)
-    model_id = "sentence-transformers/all-MiniLM-L6-v2"
-    model = SentenceTransformer(model_id)
-    
-    # training_args = TrainingArguments(output_dir="test_trainer")
-    
-    # USE THIS LINK
-    # https://huggingface.co/blog/how-to-train-sentence-transformers
-    
-    train_loss = losses.BatchHardSoftMarginTripletLoss(model=model)
-    
-    print("BEGIN FIT")
-    
-    model.fit(train_objectives=[(train_dataloader, train_loss)], epochs=10)
-    
-    model.save("ag_news_model")
-    
-    model.save_to_hub("smhavens/all-MiniLM-agNews")
-    # accuracy = compute_metrics(eval, metric)
-    
-    # training_args = TrainingArguments(output_dir="test_trainer", evaluation_strategy="epoch")
-    
-    # trainer = Trainer(
-    #     model=model,
-    #     args=training_args,
-    #     train_dataset=train,
-    #     eval_dataset=eval,
-    #     compute_metrics=compute_metrics,
-    # )
-    
-    # trainer.train()
     
     
 def get_model():
-    model = SentenceTransformer("bert-analogies")
+    global model_base
+    model = SentenceTransformer(model_base)
     gpu_available = torch.cuda.is_available()
     device = torch.device("cuda" if gpu_available else "cpu")
     model = model.to(device)
@@ -175,9 +102,10 @@ def embeddings(model, sentences):
     global word1
     global word2
     global word3
+    global model_base
 
     # Load model from HuggingFace Hub
-    tokenizer = AutoTokenizer.from_pretrained('bert-analogies')
+    tokenizer = AutoTokenizer.from_pretrained(model_base)
     encoded_input = tokenizer(sentences, padding=True, truncation=True, return_tensors='pt')
     # token_ids = tokenizer.encode(sentences, return_tensors='pt')
     # blank_id = tokenizer.mask_token_id
@@ -199,7 +127,7 @@ def embeddings(model, sentences):
         model_output = model(**encoded_input)
         # output = model(encoded_input_topk)
     
-    unmasker = pipeline('fill-mask', model='bert-analogies')
+    unmasker = pipeline('fill-mask', model=model_base)
     guesses = unmasker(sentences)
     print(guesses)
 
@@ -223,12 +151,13 @@ def embeddings(model, sentences):
 
 
 def random_word():
-    with open('ag_news_model/vocab.txt', 'r') as file:
+    global model_base
+    with open(model_base + '/vocab.txt', 'r') as file:
         line = ""
         content = file.readlines()
         length = len(content)
         while line == "":
-            rand_line = random.randrange(1997, length)
+            rand_line = random.randrange(0, length)
             
             if content[rand_line][0].isalpha() and content[rand_line][:-1] not in stops and content[rand_line][:-1] not in ROMAN_CONSTANTS:
                 line = content[rand_line]
