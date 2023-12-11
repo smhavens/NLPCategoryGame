@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 5058aea (Problems)
 from datasets import load_dataset
 import shutil
 import json
@@ -615,6 +618,7 @@ def main():
     
 
 if __name__ == "__main__":
+<<<<<<< HEAD
 =======
 from datasets import load_dataset
 import shutil
@@ -1233,4 +1237,6 @@ def main():
 
 if __name__ == "__main__":
 >>>>>>> 7d5b505 (New in-context model with working UI System)
+=======
+>>>>>>> 5058aea (Problems)
     main()
