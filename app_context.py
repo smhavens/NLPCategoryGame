@@ -2,10 +2,6 @@ import gradio as gr
 import math
 import spacy
 from datasets import load_dataset
-from sentence_transformers import SentenceTransformer
-from sentence_transformers import InputExample
-from sentence_transformers import losses
-from sentence_transformers import util
 from transformers import pipeline, T5Tokenizer
 from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassification
 from transformers import TrainingArguments, Trainer, T5ForConditionalGeneration

@@ -24,13 +24,6 @@ from transformers import (
     EvalPrediction
 )
 
-# !pip install https://huggingface.co/spacy/en_core_web_sm/resolve/main/en_core_web_sm-any-py3-none-any.whl
-# subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'https://huggingface.co/spacy/en_core_web_sm/resolve/main/en_core_web_sm-any-py3-none-any.whl'])
-# tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
-# data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
-# nltk.download('stopwords')
-# nlp = spacy.load("en_core_web_sm")
-# stops = stopwords.words("english")
 nltk.download("punkt", quiet=True)
 metric = evaluate.load("rouge")
 
@@ -117,30 +110,6 @@ def training():
     # We prefix our tasks with "answer the question"
     prefix = "Please answer this question: "
 
-    # Define the preprocessing function
-
-    # def preprocess_function(examples):
-    #     """Add prefix to the sentences, tokenize the text, and set the labels"""
-    #     # The "inputs" are the tokenized answer:
-    #     inputs = []
-    #     # print(examples)
-    #     # inputs = [prefix + doc for doc in examples["question"]]
-    #     for doc in examples['source']:
-    #         # print("THE DOC IS:", doc)
-    #         # print("THE DOC IS:", examples[i]['AB'], examples[i]['CD'], examples[i]['label'])
-    #         prompt = f"{prefix}map "
-    #         for item in doc:
-    #             prompt += f"{item}, and "
-    #         prompt = prompt[:-6]
-    #         inputs.append(prompt)
-    #     # inputs = [prefix + doc for doc in examples["question"]]
-    #     for indx, doc in enumerate(examples["target_random"]):
-    #         prompt = f" to "
-    #         for item in doc:
-    #             prompt += f"{item}, and "
-    #         prompt = prompt[:-6] + "."
-    #         inputs[indx] += prompt
-    #     model_inputs = tokenizer(inputs, max_length=128, truncation=True)
         
     def preprocess_function(examples):
         """Add prefix to the sentences, tokenize the text, and set the labels"""
@@ -177,25 +146,6 @@ def training():
     
     # Map the preprocessing function across our dataset
     tokenized_dataset = dataset.map(preprocess_function, batched=True)
-    # train_examples = []
-    # train_data = dataset["test"]
-    # # For agility we only 1/2 of our available data
-    # n_examples = dataset["test"].num_rows // 2
-    
-    # for i in range(n_examples):
-    #     example = train_data[i]
-    #     temp_word_1 = example["stem"][0]
-    #     temp_word_2 = example["stem"][1]
-    #     temp_word_3 = example["choice"][example["answer"]][0]
-    #     temp_word_4 = example["choice"][example["answer"]][1]
-    #     comp1 = f"{temp_word_1} to {temp_word_2}"
-    #     comp2 = f"{temp_word_3} to {temp_word_4}"
-    #     # example_opposite = dataset_clean[-(i)]
-    #     # print(example["text"])
-    #     train_examples.append(InputExample(texts=[comp1, comp2]))
-    
-        
-    # train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=25)
     
     print("END DATALOADER")
     
@@ -276,23 +226,6 @@ def main():
     global guesses
     
     training()
-    
-    # prompt = f"{word1} is to {word2} as {word3} is to ____"
-    # with gr.Blocks() as iface:
-    #     gr.Markdown(prompt)
-    #     with gr.Tab("Guess"):
-    #         text_input = gr.Textbox()
-    #         text_output = gr.Textbox()
-    #         text_button = gr.Button("Submit")
-    #     with gr.Accordion("Open for previous guesses"):
-    #         text_guesses = gr.Textbox()
-    #     with gr.Tab("Testing"):
-    #         gr.Markdown(f"""Number of rows in dataset is {num_rows}, with each having type {data_type} and value {value}.
-    #                     An example is {example}.
-    #                     The Embeddings are {embeddings}.""")
-    #     text_button.click(check_answer, inputs=[text_input], outputs=[text_output, text_guesses])
-    # # iface = gr.Interface(fn=greet, inputs="text", outputs="text")
-    # iface.launch()
     
     
 
